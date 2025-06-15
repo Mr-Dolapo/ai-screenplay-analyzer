@@ -32,3 +32,16 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_data_bucket_en
     }
   }
 }
+
+resource "aws_s3_bucket_notification" "trigger_lambda_fdx_to_json" {
+  bucket = aws_s3_bucket.s3_data_bucket.id
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.lambda_fdx_to_json.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "fdx/"
+    filter_suffix       = ".fdx"
+  }
+
+  depends_on = [aws_lambda_permission.allow_s3_invoke]
+}
