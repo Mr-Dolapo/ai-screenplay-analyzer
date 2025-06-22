@@ -1,3 +1,4 @@
+# Lambda function resource responsible for turning .fdx to .json
 resource "aws_lambda_function" "lambda_fdx_to_json" {
   filename      = data.archive_file.fdx_to_json_lambda_zip.output_path
   function_name = "lambda_fdx_to_json"
@@ -7,6 +8,7 @@ resource "aws_lambda_function" "lambda_fdx_to_json" {
   source_code_hash = data.archive_file.fdx_to_json_lambda_zip.output_base64sha256
 }
 
+# Specifies entity able to invoke lambda function, in this case the S3 bucket storing the .fdx files
 resource "aws_lambda_permission" "allow_s3_invoke" {
   statement_id  = "AllowExecutionFromS3"
   action        = "lambda:InvokeFunction"

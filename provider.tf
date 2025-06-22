@@ -9,6 +9,7 @@ terraform {
   }
 }
 
+# AWS region specified to deploy resources according to config files
 provider "aws" {
   region = "eu-west-2"
 }
