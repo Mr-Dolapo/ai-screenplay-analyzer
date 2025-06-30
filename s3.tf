@@ -1,6 +1,6 @@
-#S3 Bucket to store .fdx, .json and bedrock evaluation files.
+# S3 Bucket to store .fdx, .json, and bedrock evaluation files
 
-# S3 Bucket Itself
+# Create the S3 bucket with object lock enabled and lifecycle protection to prevent accidental deletion
 resource "aws_s3_bucket" "s3_data_bucket" {
   bucket              = "s3-data-bucket-dolapo-ai-screenplay-analyzer"
   object_lock_enabled = true
@@ -14,7 +14,7 @@ resource "aws_s3_bucket" "s3_data_bucket" {
   }
 }
 
-# Versioning block to add versioning feature to data bucket
+# Enable versioning on the S3 bucket to keep track of changes to objects
 resource "aws_s3_bucket_versioning" "s3_data_bucket_versioning" {
   bucket = aws_s3_bucket.s3_data_bucket.id
   versioning_configuration {
@@ -22,7 +22,7 @@ resource "aws_s3_bucket_versioning" "s3_data_bucket_versioning" {
   }
 }
 
-# Encryption block to add encryption to data bucket
+# Configure server-side encryption using AES256 for all objects in the bucket
 resource "aws_s3_bucket_server_side_encryption_configuration" "s3_data_bucket_encryption" {
   bucket = aws_s3_bucket.s3_data_bucket.id
 
@@ -33,9 +33,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_data_bucket_en
   }
 }
 
+# Configure S3 bucket notifications to trigger Lambda functions on object creation events for specific prefixes and suffixes
 resource "aws_s3_bucket_notification" "trigger_lambdas" {
   bucket = aws_s3_bucket.s3_data_bucket.id
 
+  # Trigger lambda_fdx_to_json when a new .fdx file is created under "fdx/" prefix
   lambda_function {
     lambda_function_arn = aws_lambda_function.lambda_fdx_to_json.arn
     events              = ["s3:ObjectCreated:*"]
@@ -43,6 +45,7 @@ resource "aws_s3_bucket_notification" "trigger_lambdas" {
     filter_suffix       = ".fdx"
   }
 
+  # Trigger lambda_json_to_eval when a new .json file is created under "json/" prefix
   lambda_function {
     lambda_function_arn = aws_lambda_function.lambda_json_to_eval.arn
     events              = ["s3:ObjectCreated:*"]
