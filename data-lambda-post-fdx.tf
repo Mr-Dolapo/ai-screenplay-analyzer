@@ -7,6 +7,15 @@ data "archive_file" "post_fdx_lambda_zip" {
 
 # Data block to create JSON policy for lambda role permissions (upload to fdx/ and read bedrock-evaluations/)
 data "aws_iam_policy_document" "post_fdx_policy" {
+  # Allow list on the entire bucket
+  statement {
+    actions   = ["s3:ListBucket"]
+    resources = [
+      aws_s3_bucket.s3_data_bucket.arn
+    ]
+  }
+
+  # Allow get/put object access to specific prefixes
   statement {
     actions = ["s3:GetObject", "s3:PutObject"]
     resources = [
@@ -24,6 +33,7 @@ data "aws_iam_policy_document" "post_fdx_policy" {
     resources = ["arn:aws:logs:*:*:*"]
   }
 }
+
 
 # Data block to allow Lambda to assume the role
 data "aws_iam_policy_document" "assume_role_policy_post_fdx" {

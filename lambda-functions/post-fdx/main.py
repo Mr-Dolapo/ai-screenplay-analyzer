@@ -3,7 +3,7 @@ import logging
 import os
 import json
 import base64
-from datetime import datetime
+from datetime import datetime, timezone
 import cgi
 from io import BytesIO
 
@@ -88,7 +88,7 @@ def handle_upload(event):
         }
 
     # Create new filename with UTC timestamp appended for uniqueness
-    timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+    timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')
     safe_name = filename.rsplit('.', 1)[0]
     new_filename = f"{safe_name}_{timestamp}.fdx"
     s3_key = f"{UPLOAD_PREFIX}{new_filename}"
@@ -124,6 +124,10 @@ def handle_get_result(event):
             "statusCode": 400,
             "body": json.dumps({"message": "Missing jobId query parameter"})
         }
+
+    # Convert .fdx to .json if needed
+    if job_id.endswith('.fdx'):
+        job_id = job_id.rsplit('.', 1)[0] + '.json'
 
     key = f"bedrock-evaluations/{job_id}"
 
